@@ -34,20 +34,13 @@ namespace TypeTools
 
         
             template<typename T> struct GetLen;
-            template<template<typename ...> class TBase, typename TType, typename ...TTypes>
-            struct GetLen<TBase<TType, TTypes...>>
+            template<template<typename ...> class TBase, typename ...TTypes>
+            struct GetLen<TBase<TTypes...>>
             {
-                constexpr static size_t value = 1 + GetLen<TBase<TTypes...>>::value;
+                constexpr static size_t value = sizeof...(TTypes);
             };
 
-        
-            template<template<typename ...> class TBase, typename TType>
-            struct GetLen<TBase<TType>>
-            {
-                constexpr static size_t value = 1;
-
-            };
-
+    
         
             template<template<typename ...> class TBase, size_t CurSlots, size_t Slots, size_t LastSlots, typename NT, typename ...TTypes>
             struct CreateModify;

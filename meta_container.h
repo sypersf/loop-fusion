@@ -3,6 +3,8 @@
 
 #include "types_tools.h"
 #include "numeric_tools.h"
+#include "ops.h"
+#include <array>
 namespace MetaContainer
 {
 
@@ -66,7 +68,11 @@ namespace MetaContainer
     template <typename T, size_t ...NDims>
     struct Tensor
     {
+        using TensorType = Tensor<T, NDims...>;
         constexpr static size_t elem_num = NumericTools::Count<NDims...>::value;
+        using DataType = std::array<T, elem_num>;
+        using ElemType = T;
+
         std::array<T, elem_num> data;
         Tensor(T v)
         {
@@ -74,6 +80,31 @@ namespace MetaContainer
             {
                 *it = v;
             }
+        }
+
+        template<typename Ty_>
+        auto operator + (const Ty_& rhs)
+        {
+            using OPName = typename OPs::PlusOP<TensorType, Ty_>;
+            return OPName(*this, rhs);
+        }
+        template<typename Ty_>
+        auto operator - (const Ty_& rhs)
+        {
+            using OPName = typename OPs::MinusOP<TensorType, Ty_>;
+            return OPName(*this, rhs);
+        }
+        template<typename Ty_>
+        auto operator * (const Ty_& rhs)
+        {
+            using OPName = typename OPs::MultipliesOP<TensorType, Ty_>;
+            return OPName(*this, rhs);
+        }
+        template<typename Ty_>
+        auto operator / (const Ty_& rhs)
+        {
+            using OPName = typename OPs::DividesOP<TensorType, Ty_>;
+            return OPName(*this, rhs);
         }
     };
 }
