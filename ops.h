@@ -1,26 +1,10 @@
 #ifndef _OPS_
 #define _OPS_
-#include "types_tools.h"
-namespace OPs
-{
-    template<template <typename ...> class OPName, typename Tx_, typename Ty_>
-    struct BinaryOP;
-
-    template<typename Tx_, typename Ty_>
-    struct PlusOP;
-
-    template<typename Tx_, typename Ty_>
-    struct MinusOP;
-
-    template<typename Tx_, typename Ty_>
-    struct MultipliesOP;
-
-    template<typename Tx_, typename Ty_>
-    struct DividesOP;
-}
+#include "meta_container.h"
 
 namespace OPs
 {
+
     template<template <typename ...> class OPName, typename Tx_, typename Ty_>
     struct BinaryOP {
         using ChildType = OPName<Tx_, Ty_>;
@@ -29,25 +13,25 @@ namespace OPs
         BinaryOP(const Tx_& left, const Ty_& right) : left(left), right(right) {}
 
         template<typename Ty__>
-        auto operator +(const Ty__& right)
+        constexpr auto operator +(const Ty__& right)
         {
             using RetType = PlusOP<ChildType, Ty__>;
             return RetType(*reinterpret_cast<ChildType*>(this), right);
         }
         template<typename Ty__>
-        auto operator -(const Ty__& right)
+        constexpr auto operator -(const Ty__& right)
         {
             using RetType = MinusOP<ChildType, Ty__>;
             return RetType(*reinterpret_cast<ChildType*>(this), right);
         }
-                template<typename Ty__>
-        auto operator *(const Ty__& right)
+        template<typename Ty__>
+        constexpr auto operator *(const Ty__& right)
         {
             using RetType = MultipliesOP<ChildType, Ty__>;
             return RetType(*reinterpret_cast<ChildType*>(this), right);
         }
-                template<typename Ty__>
-        auto operator /(const Ty__& right)
+        template<typename Ty__>
+        constexpr auto operator /(const Ty__& right)
         {
             using RetType = DividesOP<ChildType, Ty__>;
             return RetType(*reinterpret_cast<ChildType*>(this), right);
@@ -61,28 +45,60 @@ namespace OPs
         PlusOP(const Tx_& left, const Ty_& right) :FatherType(left, right) {}
     };
 
-        template<typename Tx_, typename Ty_>
+    template<typename Tx_, typename Ty_>
     struct MinusOP : BinaryOP<MinusOP, Tx_, Ty_> {
         using FatherType = BinaryOP<MinusOP, Tx_, Ty_>;
         MinusOP(const Tx_& left, const Ty_& right) :FatherType(left, right) {}
     };
 
-        template<typename Tx_, typename Ty_>
+    template<typename Tx_, typename Ty_>
     struct MultipliesOP : BinaryOP<MultipliesOP, Tx_, Ty_> {
         using FatherType = BinaryOP<MultipliesOP, Tx_, Ty_>;
         MultipliesOP(const Tx_& left, const Ty_& right) :FatherType(left, right) {}
     };
 
-        template<typename Tx_, typename Ty_>
+    template<typename Tx_, typename Ty_>
     struct DividesOP : BinaryOP<DividesOP, Tx_, Ty_> {
         using FatherType = BinaryOP<DividesOP, Tx_, Ty_>;
         DividesOP(const Tx_& left, const Ty_& right) :FatherType(left, right) {}
     };
 
+    template<typename T, size_t ...NDims>
+    constexpr auto Build(const MetaContainer::Tensor<T, NDims...>& ops)
+    {
+        return [&](size_t i) {return ops.data[i]; };
+    }
+
+
+    template<typename ...Args>
+    constexpr auto Build(const PlusOP<Args...>& ops)
+    {
+        return [&](size_t i) {return Build(ops.left)(i) + Build(ops.right)(i); };
+    }
 
 
 
+    template<typename ...Args>
+    constexpr auto Build(const MinusOP<Args...>& ops)
+    {
+        return [&](size_t i) {return Build(ops.left)(i) - Build(ops.right)(i); };
+    }
 
+
+
+    template<typename ...Args>
+    constexpr auto Build(const MultipliesOP<Args...>& ops)
+    {
+        return [&](size_t i) {return Build(ops.left)(i) * Build(ops.right)(i); };
+    }
+
+
+
+    template<typename ...Args>
+    constexpr auto Build(const DividesOP<Args...>& ops)
+    {
+        return [&](size_t i) {return Build(ops.left)(i) / Build(ops.right)(i); };
+    }
 
 }
 #endif
