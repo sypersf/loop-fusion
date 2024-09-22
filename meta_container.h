@@ -88,16 +88,40 @@ namespace MetaContainer
     struct Tensor
     {
         using TensorType = Tensor<T, NDims...>;
-        constexpr static size_t elem_num = NumericTools::Count<NDims...>::value;
+        constexpr static size_t elem_num = NumericTools::Multiplies<NDims...>::value;
         using DataType = std::array<T, elem_num>;
         using ElemType = T;
 
         std::array<T, elem_num> data;
         Tensor(const T& v)
         {
-            for (auto it = data.begin(); it != data.end(); ++it)
+            for (size_t i = 0; i < elem_num; ++i)
             {
-                *it = v;
+                data[i] = v;
+            }
+        }
+
+        Tensor(const T*& v)
+        {
+            for (size_t i = 0; i < elem_num; ++i)
+            {
+                data[i] = v[i];
+            }
+        }
+
+        Tensor(const std::function<T(size_t)>& fn)
+        {
+            for (size_t i = 0; i < elem_num; ++i)
+            {
+                data[i] = fn(i);
+            }
+        }
+
+        Tensor(const std::initializer_list<T>& l)
+        {
+            for (size_t i = 0; i < elem_num; ++i)
+            {
+                data[i] = *(l.begin() + i);
             }
         }
 
