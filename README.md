@@ -30,20 +30,23 @@ We can solve this problem by recording a series of operations to construct a com
 auto ops = tensor0 + tensor1 * tensor2;
 ```
 
-Then, we use the constructed computational graph to build the anonymous function. Finally, the result is given:
+Then, we use the computational graph to construct the result:
 ```c++
-decltype(tensor0) result(OPs::Build(ops));
-```
-
-The details of the construction are as follows:
-```c++
-Tensor(const std::function<T(size_t)>& fn)
-{
-    for (size_t i = 0; i < elem_num; ++i)
-    {
-        data[i] = fn(i);
-    }
-}
+decltype(tensor0) result;
+result.Evaluate(ops);
 ```
 
 This approach allows us to express the desired calculations in a more concise and efficient way, while also avoiding the compiler's inability to perform loop fusion to optimize the code.
+
+### Result
+We see through disassembly that there is only one loop body, and the compiler has completed instruction parallelism.
+```c++
+do
+{
+*(__m128 *)&v12[v3 / 4] = _mm_add_ps(
+                            _mm_mul_ps(*(__m128 *)((char *)&unk_2044 + v3), *(__m128 *)((char *)&unk_2024 + v3)),
+                            _mm_div_ps(*(__m128 *)((char *)&unk_2004 + v3), *(__m128 *)((char *)&unk_2024 + v3)));
+v3 += 16LL;
+}
+while ( v3 != 32 );
+```

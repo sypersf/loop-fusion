@@ -1,9 +1,20 @@
 #ifndef _OPS_
 #define _OPS_
-#include "meta_container.h"
 
 namespace OPs
 {
+    template<typename Tx_, typename Ty_>
+    struct PlusOP;
+
+    template<typename Tx_, typename Ty_>
+    struct MinusOP;
+
+    template<typename Tx_, typename Ty_>
+    struct MultipliesOP;
+
+    template<typename Tx_, typename Ty_>
+    struct DividesOP;
+
 
     template<template <typename ...> class OPName, typename Tx_, typename Ty_>
     struct BinaryOP {
@@ -63,41 +74,41 @@ namespace OPs
         DividesOP(const Tx_& left, const Ty_& right) :FatherType(left, right) {}
     };
 
-    template<typename T, size_t ...NDims>
-    constexpr auto Build(const MetaContainer::Tensor<T, NDims...>& ops)
+    template<typename T>
+    constexpr static auto Build(const T& ops)
     {
-        return [&](size_t i) {return ops.data[i]; };
+        return [&ops](size_t i) {return ops.data[i]; };
     }
 
 
     template<typename ...Args>
-    constexpr auto Build(const PlusOP<Args...>& ops)
+    constexpr static auto Build(const PlusOP<Args...>& ops)
     {
-        return [&](size_t i) {return Build(ops.left)(i) + Build(ops.right)(i); };
-    }
-
-
-
-    template<typename ...Args>
-    constexpr auto Build(const MinusOP<Args...>& ops)
-    {
-        return [&](size_t i) {return Build(ops.left)(i) - Build(ops.right)(i); };
+        return [&ops](size_t i) {return Build(ops.left)(i) + Build(ops.right)(i); };
     }
 
 
 
     template<typename ...Args>
-    constexpr auto Build(const MultipliesOP<Args...>& ops)
+    constexpr static auto Build(const MinusOP<Args...>& ops)
     {
-        return [&](size_t i) {return Build(ops.left)(i) * Build(ops.right)(i); };
+        return [&ops](size_t i) {return Build(ops.left)(i) - Build(ops.right)(i); };
     }
 
 
 
     template<typename ...Args>
-    constexpr auto Build(const DividesOP<Args...>& ops)
+    constexpr static auto Build(const MultipliesOP<Args...>& ops)
     {
-        return [&](size_t i) {return Build(ops.left)(i) / Build(ops.right)(i); };
+        return [&ops](size_t i) {return Build(ops.left)(i) * Build(ops.right)(i); };
+    }
+
+
+
+    template<typename ...Args>
+    constexpr static auto Build(const DividesOP<Args...>& ops)
+    {
+        return [&ops](size_t i) {return Build(ops.left)(i) / Build(ops.right)(i); };
     }
 
 }

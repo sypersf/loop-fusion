@@ -1,4 +1,3 @@
-#include "ops.h"
 #include "meta_container.h"
 #include <vector>
 #include <tuple>
@@ -24,6 +23,11 @@ int main()
         {5.f, 6.f, 7.f, 8.f, 9.f, 10.f, 11.f, 12.f}
         );
     auto ops = tensor0 / tensor1 + tensor1 * tensor2;
-    decltype(tensor0) result(OPs::Build(ops));
+    decltype(tensor0) result;
+    result.Evaluate(ops);
+    for (size_t i = 0; i < result.elem_num; ++i)
+    {
+        std::cout << result.data[i] << std::endl;
+    }
     return 0;
 }

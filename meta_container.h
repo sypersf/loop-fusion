@@ -3,25 +3,10 @@
 
 #include "types_tools.h"
 #include "numeric_tools.h"
+#include "ops.h"
 #include <array>
 #include <functional>
-namespace OPs
-{
-    template<template <typename ...> class OPName, typename Tx_, typename Ty_>
-    struct BinaryOP;
 
-    template<typename Tx_, typename Ty_>
-    struct PlusOP;
-
-    template<typename Tx_, typename Ty_>
-    struct MinusOP;
-
-    template<typename Tx_, typename Ty_>
-    struct MultipliesOP;
-
-    template<typename Tx_, typename Ty_>
-    struct DividesOP;
-}
 
 
 namespace MetaContainer
@@ -93,6 +78,18 @@ namespace MetaContainer
         using ElemType = T;
 
         std::array<T, elem_num> data;
+        
+        template<typename Graph>
+        auto Evaluate(const Graph& graph)
+        {
+            auto fn = OPs::Build(graph);
+            for(size_t i = 0; i < elem_num; ++i)
+            {
+                data[i] = fn(i);
+            }
+        }
+
+        Tensor() = default;
         Tensor(const T& v)
         {
             for (size_t i = 0; i < elem_num; ++i)
