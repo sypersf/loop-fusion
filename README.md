@@ -38,7 +38,7 @@ result.Evaluate(ops);
 
 This approach allows us to express the desired calculations in a more concise and efficient way, while also avoiding the compiler's inability to perform loop fusion to optimize the code.
 
-### Result
+## Result
 We see through disassembly that there is only one loop body, and the compiler has completed instruction parallelism.
 ```c++
 do
