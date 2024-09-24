@@ -1,6 +1,6 @@
 #ifndef _OPS_
 #define _OPS_
-
+#include <stddef.h>
 namespace OPs
 {
     template<typename Tx_, typename Ty_>
@@ -19,8 +19,8 @@ namespace OPs
     template<template <typename ...> class OPName, typename Tx_, typename Ty_>
     struct BinaryOP {
         using ChildType = OPName<Tx_, Ty_>;
-        const Tx_& left;
-        const Ty_& right;
+        const Tx_ left; // Passing by value, since if the temporary object is destructed, passing by reference will be invalid.
+        const Ty_ right;
         BinaryOP(const Tx_& left, const Ty_& right) : left(left), right(right) {}
 
         template<typename Ty__>
