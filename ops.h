@@ -1,6 +1,7 @@
 #ifndef _OPS_
 #define _OPS_
 #include <stddef.h>
+#include <memory>
 namespace OPs
 {
     template<typename Tx_, typename Ty_>
