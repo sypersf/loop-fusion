@@ -19,9 +19,9 @@ namespace OPs
     template<template <typename ...> class OPName, typename Tx_, typename Ty_>
     struct BinaryOP {
         using ChildType = OPName<Tx_, Ty_>;
-        const Tx_ left; // Passing by value, since if the temporary object is destructed, passing by reference will be invalid.
-        const Ty_ right;
-        BinaryOP(const Tx_& left, const Ty_& right) : left(left), right(right) {}
+       	std::shared_ptr<const Tx_> left;
+		std::shared_ptr<const Ty_> right;
+        BinaryOP(const Tx_& left, const Ty_& right) : left(new Tx_(left)), right(new Ty_(right)) {}
 
         template<typename Ty__>
         constexpr auto operator +(const Ty__& right)
@@ -75,41 +75,34 @@ namespace OPs
     };
 
     template<typename T>
-    constexpr static auto Build(const T& ops)
-    {
-        return [&ops](size_t i) {return ops.data[i]; };
-    }
+	constexpr static auto Build(const T& ops)
+	{
+		return [&ops](size_t i) {return ops.data[i]; };
+	}
 
+	template<typename ...Args>
+	constexpr static auto Build(const PlusOP<Args...>& ops)
+	{
+		return [&ops](size_t i) {return Build(*ops.left.get())(i) + Build(*ops.right.get())(i); };
+	}
 
-    template<typename ...Args>
-    constexpr static auto Build(const PlusOP<Args...>& ops)
-    {
-        return [&ops](size_t i) {return Build(ops.left)(i) + Build(ops.right)(i); };
-    }
+	template<typename ...Args>
+	constexpr static auto Build(const MinusOP<Args...>& ops)
+	{
+		return [&ops](size_t i) {return Build(*ops.left.get())(i) - Build(*ops.right.get())(i); };
+	}
 
+	template<typename ...Args>
+	constexpr static auto Build(const MultipliesOP<Args...>& ops)
+	{
+		return [&ops](size_t i) {return Build(*ops.left.get())(i) * Build(*ops.right.get())(i); };
+	}
 
-
-    template<typename ...Args>
-    constexpr static auto Build(const MinusOP<Args...>& ops)
-    {
-        return [&ops](size_t i) {return Build(ops.left)(i) - Build(ops.right)(i); };
-    }
-
-
-
-    template<typename ...Args>
-    constexpr static auto Build(const MultipliesOP<Args...>& ops)
-    {
-        return [&ops](size_t i) {return Build(ops.left)(i) * Build(ops.right)(i); };
-    }
-
-
-
-    template<typename ...Args>
-    constexpr static auto Build(const DividesOP<Args...>& ops)
-    {
-        return [&ops](size_t i) {return Build(ops.left)(i) / Build(ops.right)(i); };
-    }
+	template<typename ...Args>
+	constexpr static auto Build(const DividesOP<Args...>& ops)
+	{
+		return [&ops](size_t i) {return Build(*ops.left.get())(i) / Build(*ops.right.get())(i); };
+	}
 
 }
 #endif
